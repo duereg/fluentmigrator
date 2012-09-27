@@ -49,8 +49,9 @@ namespace FluentMigrator.Console
         public bool Verbose;
         public long Version;
         public string WorkingDirectory;
+        public bool UseTrans = true;
 
-        public RunnerContext RunnerContext { get; private set;}
+        public RunnerContext RunnerContext { get; private set; }
 
         public MigratorConsole(params string[] args)
         {
@@ -163,7 +164,12 @@ namespace FluentMigrator.Console
                                             "help|h|?",
                                             "Displays this help menu.",
                                             v => { ShowHelp = true; }
-                                            }
+                                            },
+                                        {
+                                            "useTrans=",
+                                            "When set to true, no transactions will be used.",
+                                            v=> { UseTrans = bool.Parse(v); }
+                                        }
                                     };
 
                 try
@@ -247,10 +253,10 @@ namespace FluentMigrator.Console
             using (var sw = new StreamWriter(outputTo))
             {
                 var fileAnnouncer = new TextWriterAnnouncer(sw)
-                                        {
-                                            ShowElapsedTime = false,
-                                            ShowSql = true
-                                        };
+                {
+                    ShowElapsedTime = false,
+                    ShowSql = true
+                };
                 consoleAnnouncer.ShowElapsedTime = Verbose;
                 consoleAnnouncer.ShowSql = Verbose;
 
@@ -278,7 +284,8 @@ namespace FluentMigrator.Console
                 Timeout = Timeout,
                 ConnectionStringConfigPath = ConnectionStringConfigPath,
                 ApplicationContext = ApplicationContext,
-                Tags = Tags
+                Tags = Tags,
+                UseTrans = UseTrans
             };
 
             new TaskExecutor(RunnerContext).Execute();
